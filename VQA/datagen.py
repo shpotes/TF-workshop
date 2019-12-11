@@ -34,7 +34,7 @@ def load(raw):
     # load images
     filepath = raw['image']
     image = tf.io.read_file(filepath)
-    raw['image'] = tf.io.decode_jpeg(image)
+    raw['image'] = tf.io.decode_jpeg(image, channels=3)
 
     raw['correct_answer'] = 3
     return raw
