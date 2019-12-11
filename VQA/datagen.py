@@ -4,13 +4,21 @@ import tensorflow as tf
 import pandas as pd
 from typing import List, Tuple
 
-def build_source_from_metadata(metadata: pd.DataFrame, data_dir: str, mode: str) -> List[Tuple[str]]:
-    type_map = {'why': 0, 'who': 1, 'what': 2, 'how': 3, 'where': 4, 'when': 5}
+
+type_map = {'why': 0, 'who': 1, 'what': 2,
+            'how': 3, 'where': 4, 'when': 5}
+
+def build_source_from_metadata(metadata: pd.DataFrame,
+                               data_dir: str,
+                               mode: str) -> List[Tuple[str]]:
     df = metadata.copy().sample(frac=1).reset_index(drop=True)
     df = df[df['split'] == mode]
-    df['filepath'] = df['filaname'].apply(lambda x: str((pathlib.Path(data_dir) / x).resolve()))
+    df['filepath'] = df['filaname'].apply(
+        lambda x: str((pathlib.Path(data_dir) / x).resolve())
+    )
     df['type'] = df['type'].apply(lambda x: type_map[x])
     source = list(zip(df['filepath'], *df.iloc[:, 2:-1].T.values))
+    return source
     
     
 def load(raw, type_map):
@@ -21,8 +29,9 @@ def load(raw, type_map):
 
 
 def propreocess(img, ans, out, typ, tok):
-    img = imagenet_preprocessing(img)
+    img = tf.keras.applications.vgg16.preprocess_input(img)
     # TODO preprocess text
+
 
 def make_dataset(source, 
                  preprocess,
@@ -38,9 +47,9 @@ def make_dataset(source,
     image, *ans, q_type = zip(*source)
     
     ds = tf.data.Dataset.from_tensor_slices({
-        'image' = list(image),
-        'ans_text' = list(ans),
-        'type' = list(q_type)
+        'image': list(image),
+        'ans_text': list(ans),
+        'type': list(q_type)
     })
     
     if training:
